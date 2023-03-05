@@ -1,5 +1,5 @@
 # botty 🤖
-The platform specific bot in the Skedulr stack. A Discord bot here, but any platform may be used by making following the required communication APIs.
+The platform specific bot in the Skedulr stack. A Discord bot here, but any platform may be used by making a bot following the required communication APIs.
 
 ## Running it
 1. Install the requirements by running
