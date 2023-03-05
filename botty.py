@@ -87,7 +87,7 @@ def run_discord_bot():
                 # auth url sent as msg
             else:
                 # user msg sent to backend
-                await message.channel.send('Sending to Backend 💯')
+                await message.channel.send('Processing... 💯')
 
                 try:
                     response = requests.post(urljoin(backend, "/user/message"), json={"message":message.content, "platform":"discord", "uid":message.author.id})
@@ -104,21 +104,21 @@ def run_discord_bot():
                 title = parsed_message["summary"]
 
 
-                if start_time is None:
-                    await message.channel.send('Could you try that again, specifying the start date and time in the following format, please: (YYYY-MM-DDTHH:MM:SS) 😔')
-                    return
-                if end_time is None:
-                    await message.channel.send('Could you try that again, specifying the end date and time in the following format, please: (YYYY-MM-DDTHH:MM:SS) 😔')
-                    return
-                if place is None:
-                    await message.channel.send('Could you try that again, specifying the location of the meeting more clearly, please: 😔')
-                    return
-                if attendees is None:
-                    await message.channel.send('Could you try that again, specifying the list of attendees more clearly, please: 😔')
-                    return
-                if title is None:
-                    await message.channel.send('Could you try that again, specifying the title of the more clearly, please: 😔')
-                    return
+                # if start_time is None:
+                #     await message.channel.send('Could you try that again, specifying the start date and time in the following format, please: (YYYY-MM-DDTHH:MM:SS) 😔')
+                #     return
+                # if end_time is None:
+                #     await message.channel.send('Could you try that again, specifying the end date and time in the following format, please: (YYYY-MM-DDTHH:MM:SS) 😔')
+                #     return
+                # if place is None:
+                #     await message.channel.send('Could you try that again, specifying the location of the meeting more clearly, please: 😔')
+                #     return
+                # if attendees is None:
+                #     await message.channel.send('Could you try that again, specifying the list of attendees more clearly, please: 😔')
+                #     return
+                # if title is None:
+                #     await message.channel.send('Could you try that again, specifying the title of the more clearly, please: 😔')
+                #     return
                 
                 names = []
                 for i in attendees:
@@ -126,22 +126,30 @@ def run_discord_bot():
 
                 await message.channel.send(f"Verify the meeting details: \n ```Start Time 🕒: {start_time} \n End Time 🕒: {end_time} \n Location 🗺️: {place} \n Attendees 🧑‍🤝‍🧑: {names} \n Title: {title}```")
 
-                view = Confirm()
+                if not (start_time is None or end_time is None or attendees is None or title is None or place is None):
+                    view = Confirm()
 
-                await message.channel.send('Click the button to send the invite!', view=view)
-                    
-                # wait for button click
-                await view.wait()
+                    await message.channel.send('Click the button to send the invite!', view=view)
+                        
+                    # wait for button click
+                    await view.wait()
 
-                parsed_message['platform'] = 'discord'
-                parsed_message['uid'] = message.author.id
+                    parsed_message['platform'] = 'discord'
+                    parsed_message['uid'] = message.author.id
 
-                if view.value:
-                    await message.channel.send("Invite Sent!")
-                    response = requests.post(urljoin(backend, "/user/message-parsed"), json=parsed_message)
+                    if view.value:
+                        response = requests.post(urljoin(backend, "/user/message-parsed"), json=parsed_message)
+                        if response.status_code == 401:
+                            await message.channel.send(f'There is a clash! : {response.json()["message"]} ☠️')
+                        else:
+                            await message.channel.send("Invite Sent! 🎯")
 
+
+                    else:
+                        await message.channel.send("Please try scheduling the meeting again then. 😔")
+                        return
                 else:
-                    await message.channel.send("Please try scheduling the meeting again then. 😔")
+                    await message.channel.send("Please try scheduling the meeting again specifying the empty field more clearly. 😔")
                     return
 
     bot.run(discord_token)
